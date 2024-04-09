@@ -19,12 +19,12 @@ class AuthController extends Controller
         $data = $request->validated();
         $user = User::where('email', $data['email'])->first();
 
-        if (!$user || ! Hash::check($request->password, $user->Password)) {
+        if (!$user || ! Hash::check($request->password, $user->password)) {
             return response([
                 "status" => 400, 
                 "message" => "Email atau password tidak cocok"], 400);
         }
-
+        
         $user['token'] = $user->createToken('user login')->plainTextToken;
 
         return response([
@@ -38,6 +38,8 @@ class AuthController extends Controller
      */
     public function registrasi(UserRegistrasiRequest $request)
     {
+        $request['usertype'] = 'user';
+        $request['status_user'] = 'Enable';
         $data = $request->validated();
         $data_email = explode('@', $data['email']);
         if ($data_email[1] != "smk.belajar.id") {
@@ -47,11 +49,11 @@ class AuthController extends Controller
         }
         
         $data = User::create([
-            'username' => $data['username'],
-            'status_user' => 'Enable',
+            'usertype' => $request['usertype'],
+            'status_user' => $request['status_user'],
             'email' => $data['email'],
+            'name' => $data['name'],
             'password' => bcrypt($data['password']),
-            'usertype' => 'user',
         ]);
 
         return response([
